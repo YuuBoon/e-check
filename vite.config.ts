@@ -4,12 +4,13 @@ import tailwindcss from '@tailwindcss/vite'
 import { VitePWA } from 'vite-plugin-pwa'
 
 export default defineConfig({
+  base: '/e-check/',
   plugins: [
     react(),
     tailwindcss(),
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['icon.svg'],
+      scope: '/e-check/',
       manifest: {
         name: 'E-Check',
         short_name: 'E-Check',
@@ -18,12 +19,12 @@ export default defineConfig({
         background_color: '#f4f7f7',
         display: 'standalone',
         orientation: 'portrait-primary',
-        start_url: '/',
-        scope: '/',
+        start_url: '/e-check/',
+        scope: '/e-check/',
         lang: 'de-CH',
         icons: [
-          { src: 'icon.svg', sizes: 'any', type: 'image/svg+xml', purpose: 'any' },
-          { src: 'icon-maskable.svg', sizes: 'any', type: 'image/svg+xml', purpose: 'maskable' }
+          { src: '/e-check/icon.svg', sizes: 'any', type: 'image/svg+xml', purpose: 'any' },
+          { src: '/e-check/icon-maskable.svg', sizes: 'any', type: 'image/svg+xml', purpose: 'maskable' }
         ]
       },
       workbox: {
