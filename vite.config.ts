@@ -36,5 +36,5 @@ export default defineConfig({
       devOptions: { enabled: true }
     })
   ],
-  test: { environment: 'node' }
+  test: { environment: 'node', include: ['src/**/*.test.{ts,tsx}'] }
 })

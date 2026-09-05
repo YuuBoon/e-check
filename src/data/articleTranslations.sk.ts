@@ -35,7 +35,7 @@ export const slovakArticleTranslations: Record<string, ArticleTranslation> = {
     tools: ['Multimeter', 'Prípadne vhodný merač izolácie'], quickCheck: ['Bezpečne odpojiť', 'Zdokumentovať zapojenie', 'Porovnať tri vinutia'],
     steps: [
       { title: 'Bezpečne odpoj motor', instruction: 'Odpoj motor, over beznapäťový stav a zdokumentuj zapojenie.', warning: 'Odpor meraj iba bez napätia.' },
-      { title: 'Zmeraj vinutia', instruction: 'Zmeraj U1-U2, V1-V2 a W1-W2.', measurement: 'Ω', expected: 'Tri navzájom podobné hodnoty', interpretation: 'Výrazná odchýlka môže znamenať chybu vinutia alebo spoja.' },
+      { title: 'Zmeraj vinutia', instruction: 'Odpoj motor od obvodu tak, aby paralelné cesty neovplyvnili meranie. Over skutočné označenie svoriek. Pri označení U1/U2, V1/V2 a W1/W2 zmeraj príslušné páry.', measurement: 'Ω', expected: 'Tri navzájom podobné hodnoty', interpretation: 'Výrazná odchýlka môže znamenať chybu vinutia alebo spoja.' },
       { title: 'Skontroluj voči kostre', instruction: 'Skontroluj spojenie s PE alebo kostrou motora.', warning: 'Multimeter nenahrádza odborné meranie izolácie.' }
     ], results: [
       { status: 'ok', condition: 'Tri podobné hodnoty', explanation: 'Vinutia pôsobia navzájom vierohodne.' },
@@ -182,7 +182,7 @@ export const slovakArticleTranslations: Record<string, ArticleTranslation> = {
     steps: [
       { title: 'Urči cieľ', instruction: 'Nájdi spotrebič alebo signál, ktorý nefunguje podľa očakávania.' },
       { title: 'Sleduj cestu', instruction: 'Postupuj spotrebič → spínací prvok → ochrana → svorky → riadenie → napájanie.' },
-      { title: 'Naplánuj merania', instruction: 'Pred každým meraním si povedz: Čo tu očakávam?', interpretation: 'Prvá odchýlka medzi očakávaním a meraním určí chybný úsek.' }
+      { title: 'Naplánuj merania', instruction: 'Pred každým meraním si povedz: Čo tu očakávam?', interpretation: 'Prvá odchýlka medzi očakávaním a meraním určí chybný úsek.', warning: 'Vykonávaj iba schválené merania.' }
     ], results: [{ status: 'ok', condition: 'Chybný úsek je určený', explanation: 'Cielene skontroluj prvok, vedenie alebo riadenie.' }, { status: 'info', condition: 'Cesta je nejasná', explanation: 'Skontroluj označenia a odkazy v schválenej schéme.' }]
   }),
   'komponenten-schaltschrank-erkennen': t({

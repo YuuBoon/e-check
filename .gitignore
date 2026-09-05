@@ -29,6 +29,8 @@ build/Release
 
 # Dependency directories
 node_modules/
+test-results/
+playwright-report/
 jspm_packages/
 web_modules/
 

@@ -9,6 +9,7 @@ import { localizedDecisionTree, motorNotRunning } from './data/decisionTrees'
 import { APP_VERSION, BASICS, CATEGORIES, CONTENT_VERSION } from './data/meta'
 import { search } from './lib/search'
 import { readPreference, writePreference } from './lib/storage'
+import { usePwaUpdateCheck } from './lib/usePwaUpdateCheck'
 import { advanceFault, backFault, restartFault } from './lib/faultNavigation'
 import { SUPPORTED_LOCALES, useI18n, type MessageKey } from './i18n'
 import type { Article, ArticleImage, DecisionNode, DecisionTree, Status } from './types'
@@ -25,6 +26,7 @@ const quickIds = ['multimeter-bedienen','24-vdc-pruefen','drehstrommotor-ausmess
 const categoryIcons = [Gauge, Plugs, Sparkle, Circuitry, CheckCircle, Warning, BookOpenText, Wrench]
 
 export function App() {
+  usePwaUpdateCheck()
   const { locale, t } = useI18n()
   const [view, setView] = useState<View>({ type: 'tab', tab: 'home' })
   const [query, setQuery] = useState('')

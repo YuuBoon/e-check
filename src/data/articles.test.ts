@@ -3,6 +3,14 @@ import { articles, localizedArticles } from './articles'
 import { CONTENT_VERSION } from './meta'
 
 describe('Artikeldaten', () => {
+  it('vermischt slowakische Multimeter-Schritte und Ergebnisse nicht mit deutschen Positionen', () => {
+    const source = articles.find((article) => article.id === 'multimeter-bedienen')!
+    const translated = localizedArticles('sk').find((article) => article.id === source.id)!
+    expect(translated.steps).toEqual(source.translations!.sk!.steps)
+    expect(translated.results).toEqual(source.translations!.sk!.results)
+    expect(translated.steps[2].measurement).toBe('Ω / spojitosť')
+    expect(translated.steps[2].expected).toBeUndefined()
+  })
   it('enthält 20 Artikel mit eindeutigen IDs', () => {
     expect(articles).toHaveLength(20)
     expect(new Set(articles.map((article) => article.id)).size).toBe(articles.length)

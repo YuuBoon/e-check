@@ -31,11 +31,20 @@ npm run build
 npm run preview
 ```
 
+Automatisierte Offline-/Update-Prüfung nach dem Produktionsbuild:
+
+```bash
+npx playwright install chromium
+npm run test:e2e
+```
+
+Der Test startet einen lokalen Server für `dist/`, lädt die App, schaltet den Browser offline und startet sie in einem neuen Tab. Er prüft Suche, Artikel, Störungsnavigation und eine gecachte SVG-Datei bei 360, 390 und 412 Pixel Breite. Eine zweite HTML-/Service-Worker-Version wird nur im Testserver simuliert: Der Test prüft Erkennung nach Netzrückkehr, Bestätigung, Aktivierung und anschliessenden Offline-Reload. Echte Geräteinstallation, Safari und echte Artikelbilder werden damit nicht geprüft. Pull Requests führen Unit-Tests, Build und diese Chromium-Tests vor dem Merge aus.
+
 Der Produktionsbuild liegt in `dist/`. Für Tests auf einem Mobilgerät kann der Entwicklungsserver mit `npm run dev -- --host` im lokalen Netz bereitgestellt werden.
 
 ## PWA und Offline-Verhalten
 
-Workbox legt HTML, JavaScript, CSS, Icons, Schriften und lokale Bilder in einem versionierten Precache ab. Nach dem ersten vollständigen Laden sind Navigation, Suche, Artikel und Störungsbaum ohne Netz nutzbar. Eine neue Version wird nicht unbemerkt mitten im Einsatz aktiviert: Die App zeigt einen Hinweis und lässt den Nutzer den Aktualisierungszeitpunkt wählen. Veraltete Caches werden bereinigt.
+Workbox legt HTML, JavaScript, CSS, Icons, Schriften und lokale Bilder in einem versionierten Precache ab. Nach dem ersten vollständigen Laden sind Navigation, Suche, Artikel und Störungsbaum ohne Netz nutzbar. Nach Netzrückkehr, beim erneuten Anzeigen der App und stündlich wird nach Updates gesucht. Eine neue Version wird nicht unbemerkt mitten im Einsatz aktiviert: Die App zeigt einen Hinweis und lässt den Nutzer den Aktualisierungszeitpunkt wählen. Veraltete Caches werden bereinigt.
 
 Installierbarkeit und Offline-Betrieb sollten über einen Produktionsbuild unter HTTPS oder auf `localhost` geprüft werden.
 
@@ -47,7 +56,7 @@ Installierbarkeit und Offline-Betrieb sollten über einen Produktionsbuild unter
 - `de-CH` ist Standardsprache und kontrollierter Fallback, falls ein einzelner Text in einer weiteren Sprache fehlt.
 - Die Sprachwahl wird nur lokal und versioniert im Browser gespeichert.
 
-Strukturierte Übersetzungslisten für Prüfschritte, Ergebnisse und Bilder folgen der Reihenfolge der deutschen Quelle. Fehlende Felder und Schritte bleiben deutsch sichtbar, insbesondere Sicherheitshinweise. Übersetzungen von Entscheidungsoptionen ändern nur die Beschriftung; Zielknoten bleiben sprachunabhängig.
+Prüfschritte, Ergebnisse und Bilder werden als vollständige übersetzte Listen gepflegt, einschliesslich aller zugehörigen Sicherheitshinweise. Unterschiedlich aufgebaute Listen werden nie positionsweise vermischt. Fehlt eine Liste oder ist sie leer, erscheint die vollständige deutsche Liste. Einzelne Textfelder ausserhalb dieser Listen fallen auf Deutsch zurück. Übersetzungen von Entscheidungsoptionen ändern nur die Beschriftung; Zielknoten bleiben sprachunabhängig.
 
 Eine weitere Sprache wird zuerst in `SUPPORTED_LOCALES` und den UI-Nachrichten ergänzt. Danach werden Artikel- und Störungsbaumübersetzungen hinterlegt und die Sprachtests erweitert.
 
