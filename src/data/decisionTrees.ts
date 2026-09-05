@@ -1,6 +1,9 @@
 import type { DecisionTree } from '../types'
+import { motorNotRunningSk } from './decisionTreeTranslations.sk'
+import { withFallback } from '../lib/localize'
 
 export const motorNotRunning: DecisionTree = {
+  translations: { sk: motorNotRunningSk },
   id: 'motor-laeuft-nicht', title: 'Motor läuft nicht', start: 'has-vfd',
   nodes: {
     'has-vfd': { id: 'has-vfd', kind: 'question', title: 'Hat der Motor einen Frequenzumrichter?', help: 'Ein Frequenzumrichter hat meist ein Display und sitzt zwischen Versorgung und Motor.', options: [
@@ -42,6 +45,23 @@ export const motorNotRunning: DecisionTree = {
     'inspect-mechanics': { id: 'inspect-mechanics', kind: 'result', title: 'Mechanik prüfen lassen', actions: ['Anlage sichern.', 'Kupplung, Getriebe und Last prüfen lassen.'], relatedArticles: [] },
     'check-motor': { id: 'check-motor', kind: 'result', title: 'Motor ausmessen', actions: ['Motor sicher freischalten.', 'Wicklungen vergleichen.', 'Versorgung und Mechanik in die Bewertung einbeziehen.'], relatedArticles: ['drehstrommotor-ausmessen'] }
   }
+}
+
+export const localizedDecisionTree = (tree: DecisionTree, locale: string): DecisionTree => {
+  const translation = tree.translations?.[locale]
+  if (!translation) return tree
+
+  const nodes = Object.fromEntries(Object.entries(tree.nodes).map(([id, node]) => [
+    id,
+    { ...withFallback(node, translation.nodes?.[id]), id,
+      options: node.options?.map((option, index) => ({
+        ...option,
+        label: withFallback(option.label, translation.nodes?.[id]?.options?.[index]?.label)
+      }))
+    }
+  ]))
+
+  return { ...tree, title: withFallback(tree.title, translation.title), nodes }
 }
 
 export function validateDecisionTree(tree: DecisionTree): string[] {

@@ -1,4 +1,5 @@
 import { articles } from '../data/articles'
+import type { Article } from '../types'
 
 export interface SearchResult {
   id: string
@@ -35,7 +36,7 @@ const fuzzyTokenMatch = (query: string, value: string) => {
   const queryTokens = normalize(query).split(' ').filter(Boolean)
   const valueTokens = normalize(value).split(' ').filter(Boolean)
   return queryTokens.every((queryToken) => valueTokens.some((valueToken) => {
-    if (valueToken.includes(queryToken) || queryToken.includes(valueToken)) return true
+    if (valueToken === queryToken || (queryToken.length >= 3 && valueToken.startsWith(queryToken))) return true
     const tolerance = queryToken.length >= 8 ? 2 : queryToken.length >= 5 ? 1 : 0
     return distance(queryToken, valueToken) <= tolerance
   }))
@@ -53,12 +54,13 @@ function fieldScore(query: string, values: string[], weight: number): number {
   return best
 }
 
-export function search(query: string): SearchResult[] {
+export function search(query: string, sourceArticles: Article[] = articles, locale = 'de-CH'): SearchResult[] {
   if (!normalize(query)) return []
-  const articleResults = articles.map((article) => {
+  const articleResults = sourceArticles.map((article) => {
     const score = Math.max(
       fieldScore(query, [article.title], 100),
       fieldScore(query, article.keywords, 80),
+      fieldScore(query, article.synonyms ?? [], 75),
       fieldScore(query, article.symptoms, 60),
       fieldScore(query, article.manufacturers, 40),
       fieldScore(query, [article.description], 20),
@@ -67,17 +69,18 @@ export function search(query: string): SearchResult[] {
     return { id: article.id, title: article.title, description: article.description, category: article.category, type: 'article' as const, score }
   }).filter((result) => result.score > 0)
 
+  const faultTitle = locale === 'sk' ? 'Porucha: Motor nebeží' : 'Störung: Motor läuft nicht'
   const faultScore = Math.max(
-    fieldScore(query, ['Störung: Motor läuft nicht'], 100),
-    fieldScore(query, ['motor läuft nicht', 'motor brummt', 'motor startet nicht'], 80)
+    fieldScore(query, [faultTitle], 100),
+    fieldScore(query, locale === 'sk' ? ['motor nebeží', 'motor hučí', 'motor neštartuje'] : ['motor läuft nicht', 'motor brummt', 'motor startet nicht'], 80)
   )
   const faultResults: SearchResult[] = faultScore ? [{
-    id: 'motor-laeuft-nicht', title: 'Störung: Motor läuft nicht',
-    description: 'Geführte Fehlersuche mit einem Prüfschritt pro Ansicht.',
-    category: 'Störungssuche', type: 'fault', score: faultScore
+    id: 'motor-laeuft-nicht', title: faultTitle,
+    description: locale === 'sk' ? 'Riadené hľadanie poruchy s jedným krokom na obrazovke.' : 'Geführte Fehlersuche mit einem Prüfschritt pro Ansicht.',
+    category: locale === 'sk' ? 'Hľadanie poruchy' : 'Störungssuche', type: 'fault', score: faultScore
   }] : []
 
-  return [...articleResults, ...faultResults].sort((a, b) => b.score - a.score || a.title.localeCompare(b.title, 'de'))
+  return [...articleResults, ...faultResults].sort((a, b) => b.score - a.score)
 }
 
 export { normalize }
