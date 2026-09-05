@@ -1,4 +1,5 @@
-export const APP_VERSION = '0.1 Prototype'
+export const APP_VERSION = '0.2.0'
+export const CONTENT_VERSION = '2026.09.1'
 
 export const CATEGORIES = [
   'Messen & Grundlagen',

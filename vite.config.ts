@@ -9,7 +9,7 @@ export default defineConfig({
     react(),
     tailwindcss(),
     VitePWA({
-      registerType: 'autoUpdate',
+      registerType: 'prompt',
       scope: '/e-check/',
       manifest: {
         name: 'E-Check',
@@ -30,11 +30,11 @@ export default defineConfig({
       workbox: {
         cleanupOutdatedCaches: true,
         navigateFallback: 'index.html',
-        globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2}'],
+        globPatterns: ['**/*.{js,css,html,ico,png,jpg,jpeg,webp,avif,svg,woff2}'],
         runtimeCaching: []
       },
       devOptions: { enabled: true }
     })
   ],
-  test: { environment: 'node' }
+  test: { environment: 'node', include: ['src/**/*.test.{ts,tsx}'] }
 })

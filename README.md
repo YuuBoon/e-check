@@ -1,87 +1,116 @@
 # E-Check
 
-E-Check ist eine mobile, offline nutzbare Arbeitshilfe für die elektrische Instandhaltung. Der Prototyp führt Mechaniker schnell von einem Problem zu einem sinnvollen nächsten Prüfschritt. Die App ersetzt weder Ausbildung noch betriebliche Berechtigungen.
+E-Check ist eine mobile, offlinefähige PWA für die elektrische Instandhaltung. Version 0.2.0 liefert eine zweisprachige, datengetriebene Grundlage für die spätere modulare IH-App. Sie unterstützt Fachkräfte beim strukturierten Prüfen, erweitert aber keine betrieblichen Berechtigungen. Sicherheits- und Arbeitsanweisungen des Betriebs haben immer Vorrang.
 
-## Tech-Stack
+## Funktionsumfang v0.2
 
-- React 19 und TypeScript
-- Vite
-- Tailwind CSS 4
+- vollständige Bedienoberfläche und Fachinhalte in `de-CH` und Slowakisch (`sk`)
+- 20 strukturierte Artikel mit Symptomen, Suchbegriffen, Prüfschritten und Ergebnissen
+- mehrsprachige lokale Suche über Titel, Begriffe, Synonyme, Symptome und Hersteller
+- zentraler, datengetriebener Störungsbaum „Motor läuft nicht“
+- Datenmodell für mehrere Artikel- und Schrittbilder mit Bildtext und Vollbildansicht
+- installierbare PWA mit kontrolliertem Aktualisierungshinweis und Offline-Precache
+- getrennte App-Version `0.2.0` und Inhaltsversion `2026.09.1`
+
+Für v0.2 wurden keine nicht vorhandenen Bilder oder zusätzlichen Störungsabläufe erfunden. Das Datenmodell ist dafür vorbereitet.
+
+## Technik
+
+- React 19, TypeScript, Vite und Tailwind CSS 4
 - Phosphor Icons
 - `vite-plugin-pwa` mit Workbox
-- Vitest
+- Vitest, Testing Library und jsdom
+- kein Login, Backend, keine Datenbank und keine API für die Kernfunktion
 
-Kein Backend, keine Datenbank und keine API für die Kernfunktion.
-
-## Installation und Entwicklung
+## Installation, Tests und Build
 
 ```bash
 npm install
-npm run dev
-```
-
-Vite zeigt danach die lokale Adresse an. Für einen Test auf dem Smartphone kann der Entwicklungsserver mit `npm run dev -- --host` im lokalen Netzwerk freigegeben werden.
-
-## Tests und Build
-
-```bash
 npm test
 npm run build
 npm run preview
 ```
 
-Der Produktionsbuild liegt in `dist/`.
+Automatisierte Offline-/Update-Prüfung nach dem Produktionsbuild:
 
-## PWA und Offline
+```bash
+npx playwright install chromium
+npm run test:e2e
+```
 
-Das Web-App-Manifest und der Service Worker werden in `vite.config.ts` konfiguriert. Workbox legt eine versionierte Precache-Liste für HTML, JavaScript, CSS, Icons und lokale Bilder an. Nach dem ersten vollständigen Laden funktionieren Navigation, Suche, Artikel und Störungsbaum offline. Alte Caches werden beim Update bereinigt.
+Der Test startet einen lokalen Server für `dist/`, lädt die App, schaltet den Browser offline und startet sie in einem neuen Tab. Er prüft Suche, Artikel, Störungsnavigation und eine gecachte SVG-Datei bei 360, 390 und 412 Pixel Breite. Eine zweite HTML-/Service-Worker-Version wird nur im Testserver simuliert: Der Test prüft Erkennung nach Netzrückkehr, Bestätigung, Aktivierung und anschliessenden Offline-Reload. Echte Geräteinstallation, Safari und echte Artikelbilder werden damit nicht geprüft. Pull Requests führen Unit-Tests, Build und diese Chromium-Tests vor dem Merge aus.
 
-Installierbarkeit und Offline-Modus am zuverlässigsten über einen Produktionsbuild und HTTPS oder `localhost` prüfen.
+Der Produktionsbuild liegt in `dist/`. Für Tests auf einem Mobilgerät kann der Entwicklungsserver mit `npm run dev -- --host` im lokalen Netz bereitgestellt werden.
 
-## Projektstruktur
+## PWA und Offline-Verhalten
+
+Workbox legt HTML, JavaScript, CSS, Icons, Schriften und lokale Bilder in einem versionierten Precache ab. Nach dem ersten vollständigen Laden sind Navigation, Suche, Artikel und Störungsbaum ohne Netz nutzbar. Nach Netzrückkehr, beim erneuten Anzeigen der App und stündlich wird nach Updates gesucht. Eine neue Version wird nicht unbemerkt mitten im Einsatz aktiviert: Die App zeigt einen Hinweis und lässt den Nutzer den Aktualisierungszeitpunkt wählen. Veraltete Caches werden bereinigt.
+
+Installierbarkeit und Offline-Betrieb sollten über einen Produktionsbuild unter HTTPS oder auf `localhost` geprüft werden.
+
+## Sprachen und Fallback
+
+- `src/i18n.tsx` enthält UI-Texte, Sprachkonfiguration und Bezeichnungen.
+- `src/data/articleTranslations.sk.ts` enthält slowakische Artikelübersetzungen.
+- `src/data/decisionTreeTranslations.sk.ts` enthält den slowakischen Störungsbaum.
+- `de-CH` ist Standardsprache und kontrollierter Fallback, falls ein einzelner Text in einer weiteren Sprache fehlt.
+- Die Sprachwahl wird nur lokal und versioniert im Browser gespeichert.
+
+Prüfschritte, Ergebnisse und Bilder werden als vollständige übersetzte Listen gepflegt, einschliesslich aller zugehörigen Sicherheitshinweise. Unterschiedlich aufgebaute Listen werden nie positionsweise vermischt. Fehlt eine Liste oder ist sie leer, erscheint die vollständige deutsche Liste. Einzelne Textfelder ausserhalb dieser Listen fallen auf Deutsch zurück. Übersetzungen von Entscheidungsoptionen ändern nur die Beschriftung; Zielknoten bleiben sprachunabhängig.
+
+Eine weitere Sprache wird zuerst in `SUPPORTED_LOCALES` und den UI-Nachrichten ergänzt. Danach werden Artikel- und Störungsbaumübersetzungen hinterlegt und die Sprachtests erweitert.
+
+## Inhalte und Bilder pflegen
+
+Neue Artikel werden datengetrieben in `src/data/articlesV02.ts` ergänzt. Jeder Artikel braucht eine eindeutige `id`, Kategorie, Kurzbeschreibung, Symptome, Suchbegriffe, Werkzeuge, mindestens drei klare Prüfschritte, Ergebniszustände und passende Übersetzungen. Technische Sollwerte, Herstellerparameter und Klemmenbezeichnungen dürfen nicht erfunden werden.
+
+Bilder liegen lokal unter `public/` und werden im Artikel so referenziert:
+
+```ts
+images: [{
+  src: '/e-check/articles/beispiel.webp',
+  alt: 'Sachliche Beschreibung des sichtbaren Bauteils',
+  caption: 'Optionaler Bildtext',
+  stepReference: 'Optionaler Bezug zum Prüfschritt'
+}]
+```
+
+Ein einzelner Prüfschritt kann zusätzlich ein `image` mit derselben Struktur enthalten. Für produktive Inhalte keine externen Bild-URLs verwenden; nur freigegebene, optimierte lokale Dateien mit aussagekräftigem Alternativtext.
+
+## Architektur und Projektstruktur
 
 ```text
 src/
 ├── data/
-│   ├── articles.ts        # fünf MVP-Artikel
-│   ├── decisionTrees.ts   # Motor-Störungsbaum
-│   └── meta.ts            # Version, Kategorien, Hersteller, Grundlagen
+│   ├── articles.ts                    # Zusammenführung und Lokalisierung
+│   ├── articlesV02.ts                 # 15 neue v0.2-Fachartikel
+│   ├── articleTranslations.sk.ts      # slowakische Artikeltexte
+│   ├── decisionTrees.ts               # zentraler Motor-Störungsbaum
+│   ├── decisionTreeTranslations.sk.ts # slowakische Baumtexte
+│   └── meta.ts                        # App-/Inhaltsversion und Stammdaten
 ├── lib/
-│   └── search.ts          # lokale gewichtete Fuzzy-Suche
-├── App.tsx                # mobile Ansichten und Navigation
-├── styles.css             # Designsystem und responsive UI
-└── types.ts               # zentrale Datenmodelle
-public/
-├── icon.svg
-└── icon-maskable.svg
+│   ├── search.ts                      # gewichtete mehrsprachige Suche
+│   ├── faultNavigation.ts             # Vor/Zurück/Neustart-Logik
+│   └── storage.ts                     # versionierte lokale Präferenzen
+├── App.tsx                            # mobile Ansichten
+├── i18n.tsx                           # UI-Lokalisierung und Fallback
+└── types.ts                           # zentrale erweiterbare Datenmodelle
 ```
 
-## Inhalte pflegen
+Verweise im Störungsbaum müssen auf vorhandene Knoten zeigen. Weiterführende Inhalte verwenden `ContentLink`; dessen Typen bereiten Artikel, Dokumente, Werkzeuge, Störungen und Fehlercodes vor, ohne diese Module bereits zu implementieren.
 
-### Neuen Artikel hinzufügen
+## Hosting und Informationsschutz
 
-In `src/data/articles.ts` ein Objekt gemäß `Article` aus `src/types.ts` ergänzen. Eine eindeutige `id`, alle Suchfelder, strukturierte Schritte und Ergebnisstatus angeben. Bilder kommen als lokale Pfade in `images[]`; ein Schritt kann zusätzlich `image` enthalten.
+Das aktuelle Deployment erfolgt über das öffentliche GitHub-Pages-Repository `YuuBoon/e-check`. Dieses Hosting ist ungeeignet für interne Dokumente, Anlagenfotos, Telefonnummern oder vertrauliches Anlagenwissen. Solche Inhalte dürfen dort nicht eingecheckt oder ausgeliefert werden. Vor V1.0 muss mit IT ein internes Hosting-, Berechtigungs- und Zugriffskonzept festgelegt werden.
 
-### Suchbegriffe hinzufügen
+## Qualitätssicherung
 
-Beim passenden Artikel Einträge unter `keywords`, `symptoms` oder `manufacturers` ergänzen. Das Ranking lautet Titel, Keyword, Symptom, Hersteller, Beschreibung, Kategorie. Danach `npm test` ausführen.
+Die Tests prüfen Artikeldaten und Verweise, de-CH/sk-Lokalisierung und Fallback, Suchbegriffe und Synonyme, gültige Entscheidungsbaum-Ziele, Vor/Zurück/Neustart sowie zentrale UI-Abläufe. Vor jedem Release zusätzlich den Produktionsbuild, kleine und grosse Mobilansichten, PWA-Aktualisierung und Offline-Betrieb manuell prüfen.
 
-### Neuen Entscheidungsbaum hinzufügen
+## Roadmap
 
-In `src/data/decisionTrees.ts` einen `DecisionTree` ergänzen. UI-Komponenten enthalten keine Pfadlogik. Jeder `next`-Wert muss auf einen vorhandenen Knoten verweisen. Die Validierungsfunktion und Tests als Vorlage nutzen.
+- **v0.2.0:** Mehrsprachigkeit, 20 Artikel, Bildmodell, zentrale datengetriebene Störungsbasis und belastbares PWA-Updateverhalten
+- **V1.0:** spätestens Dokumentenbibliothek, Elektriker-Rechner, FU-Fehlercode-Suche und freigegebene Bildunterstützung
+- **langfristig:** Mechanik, Pneumatik, Hydraulik, Teamkontakte, Anlagenwissen und QR-Zugriff
 
-### Hersteller hinzufügen
-
-Die zentrale Liste `MANUFACTURERS` in `src/data/meta.ts` ergänzen und den Hersteller nur bei passenden Artikeln in `manufacturers[]` eintragen. Keine Parameter oder Klemmenbezeichnungen erfinden.
-
-### Version ändern
-
-`APP_VERSION` in `src/data/meta.ts` und die Paketversion in `package.json` anpassen. Bei relevanten Offline-Änderungen entsteht mit dem neuen Build automatisch eine neue Workbox-Precache-Version.
-
-### Logo austauschen
-
-`public/icon.svg` und `public/icon-maskable.svg` ersetzen. Dateinamen beibehalten oder die Referenzen in `vite.config.ts` und `index.html` aktualisieren.
-
-## Version
-
-E-Check – Version 0.1 Prototype
+App-Version: **0.2.0** · Inhaltsstand: **2026.09.1**

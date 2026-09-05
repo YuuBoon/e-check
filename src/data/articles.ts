@@ -1,6 +1,10 @@
 import type { Article } from '../types'
+import { CONTENT_VERSION } from './meta'
+import { articlesV02 } from './articlesV02'
+import { slovakArticleTranslations } from './articleTranslations.sk'
+import { withFallback } from '../lib/localize'
 
-export const articles: Article[] = [
+const legacyArticles: Article[] = [
   {
     id: 'multimeter-bedienen', title: 'Multimeter bedienen', category: 'Messen & Grundlagen',
     description: 'Spannung, Widerstand und Durchgang sicher mit dem Multimeter prüfen.',
@@ -103,4 +107,23 @@ export const articles: Article[] = [
   }
 ]
 
-export const articleById = (id: string) => articles.find((article) => article.id === id)
+export const articles: Article[] = [...legacyArticles, ...articlesV02].map((article) => ({
+  ...article,
+  contentVersion: article.contentVersion ?? CONTENT_VERSION,
+  translations: {
+    ...article.translations,
+    sk: slovakArticleTranslations[article.id] ?? article.translations?.sk
+  }
+}))
+
+export const localizedArticles = (locale: string) => articles.map((article) => ({
+  ...withFallback(article, article.translations?.[locale]),
+  id: article.id,
+  category: article.category,
+  relatedArticles: article.relatedArticles,
+  relatedContent: article.relatedContent,
+  contentVersion: article.contentVersion,
+  translations: article.translations
+}))
+
+export const articleById = (id: string, locale = 'de-CH') => localizedArticles(locale).find((article) => article.id === id)

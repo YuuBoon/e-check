@@ -14,3 +14,8 @@
 - Ergänze neue Störungsbäume über die Struktur in `src/data/decisionTrees.ts`.
 - Artikel müssen mehrere Bilder über `images[]` und einzelne Schrittbilder unterstützen.
 - Prüfe vor Abschluss Build, Tests, mobile Bedienung und Offline-Verhalten.
+- Jeder neue UI-Text und Fachinhalt muss in allen unterstützten Sprachen gepflegt werden; fehlende Einzeltexte fallen kontrolliert auf `de-CH` zurück.
+- Führe App-Version und Inhaltsversion getrennt und erhöhe sie passend zur Änderung.
+- Verwende für produktive Fachinhalte keine externen Bild-URLs; Bilder müssen lokal, freigegeben und mit Alternativtext versehen sein.
+- Lege in einem öffentlichen Repository niemals interne Dokumente, Anlagenfotos, Telefonnummern oder vertrauliches Anlagenwissen ab.
+- Die geführte Fehlersuche hat einen zentralen Einstieg und bleibt vollständig datengetrieben.
